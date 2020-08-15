@@ -1,0 +1,53 @@
+job "envoy-proxy" {
+  datacenters = ["dc1"]
+
+  group "proxy" {
+    count = 1
+    task "envoy-proxy" {
+      driver = "docker"
+
+      config {
+        image = "envoyproxy/envoy:v1.14.4"
+        args = [
+          "envoy",
+          "-c",
+          "${NOMAD_TASK_DIR}/envoy.yaml"
+        ]
+        port_map {
+          redis = 6379
+          admin = 8001
+        }
+      }
+      template {
+        data = <<EOF
+[[ fileContents "envoy/envoy.yaml.gohtml" ]]
+EOF
+        destination = "local/envoy.yaml"        
+        change_mode = "noop"
+      }      
+      service {
+        name = "envoy-proxy"
+        port = "redis"
+        check {
+          type = "http"
+          path = "/ready"
+          port = "admin"
+          interval = "5s"
+          timeout = "2s"
+        }
+      }
+
+      resources {
+        cpu    = 200
+        memory = 200
+
+        network {
+          mbits = 1
+          port "redis" {
+          }
+          port "admin" { }
+        }
+      }
+    }
+  }
+}

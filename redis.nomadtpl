@@ -1,0 +1,54 @@
+job "redis-cluster" {
+  datacenters = ["dc1"]
+  [[ range $idx := loop 6 ]]
+  group "redis-[[ $idx ]]" {
+    task "redis" {
+      driver = "raw_exec"
+      config {
+        command = "redis-server"
+        args = [
+          "${NOMAD_TASK_DIR}/redis.conf"
+        ]
+      }
+      template {
+        data = <<EOF
+bind {{ env "NOMAD_IP_db" }}
+port {{ env "NOMAD_PORT_db"}}
+cluster-enabled yes
+cluster-config-file {{ env "NOMAD_TASK_DIR" }}/nodes.conf
+cluster-node-timeout 5000
+appendonly yes
+EOF
+        destination = "local/redis.conf"        
+      }
+
+      service {
+        name = "redis"
+        port = "db"
+        check {
+          port = "db"
+          type = "tcp"
+          interval = "5s"
+          timeout = "3s"
+          initial_status = "passing"          
+        }
+      }
+
+      resources {
+        cpu    = 100
+        memory = 200
+
+        network {
+          mbits = 1
+          port  "db"  {
+            static = "[[ add 7000 $idx ]]"
+          }
+          port  "gossip"  {
+            static = "[[ add 17000 $idx ]]"
+          }          
+        }
+      }
+    }
+  }
+  [[ end ]]
+}

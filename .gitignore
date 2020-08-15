@@ -1,0 +1,4 @@
+nohup.*
+start-redis-cluster.sh
+*.nomad
+envoy_proxies.txt
