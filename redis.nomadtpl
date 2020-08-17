@@ -14,6 +14,22 @@ job "redis-cluster" {
         data = <<EOF
 bind {{ env "NOMAD_IP_db" }}
 port {{ env "NOMAD_PORT_db"}}
+
+########################## CLUSTER DOCKER/NAT support  ########################
+
+# In certain deployments, Redis Cluster nodes address discovery fails, because
+# addresses are NAT-ted or because ports are forwarded (the typical case is
+# Docker and other containers).
+#
+# In order to make Redis Cluster working in such environments, a static
+# configuration where each node knows its public address is needed. The
+# following two options are used for this scope, and are:
+#
+# * cluster-announce-ip
+# * cluster-announce-port
+# * cluster-announce-bus-port
+
+
 cluster-enabled yes
 cluster-config-file {{ env "NOMAD_TASK_DIR" }}/nodes.conf
 cluster-node-timeout 5000
