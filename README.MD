@@ -14,7 +14,7 @@ Below softwares must be installed
 - Redis (Version >= 3.0)
     - Check: 
     ```
-    $ redis-cli --version
+    $ redis-cli --version && redis-server --version
     ```
 - Hashicorp Nomad
     - Check:
