@@ -44,8 +44,12 @@ EOF
         network {
           mbits = 1
           port "redis" {
+            static = 36379
           }
-          port "admin" { }
+
+          port "admin" {
+            static = 8001
+          }
         }
       }
     }
